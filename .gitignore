@@ -37,3 +37,10 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Analysis results
+PracticalDay1/SequenceAnalysis/DADA2/*
+
+# RawData and TrainingData
+PracticalDay1/SequenceAnalysis/RawData/*
+PracticalDay1/SequenceAnalysis/Training/*
