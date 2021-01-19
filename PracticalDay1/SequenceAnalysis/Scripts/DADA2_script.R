@@ -178,10 +178,14 @@ unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE) # Drop ASVs absent in
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
 rownames(unqs.mock)
 
+
+#### Read metadata
 #### Create PhyloSeq Object
 #### File named metadata.csv must exist and have SampleID variable for sample name
 ps_silva<-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=F),tax_table(taxa.silva),treeSilva)
 
+
+### Clean workspace
 
 # #asiggn metadata
 # ##DBModule$insertLogs("Assign metadata if exists",job_id,1)
