@@ -119,20 +119,16 @@ head(track)
 ### Will need to chose taxonomy database from Analysis Configuration - Silva default
 ### We'll talk about the different databases in class.
 list.files(paste(code_path,"/Training/",sep=""))
-# taxa.hit <- assignTaxonomy(seqtab.nochim, paste(code_path,"/Training/hitdb_v1.00.fa.gz",sep=""), multithread=TRUE)
+taxa.silva<-readRDS("taxa.silva.rds")
 taxa.silva<- assignTaxonomy(seqtab.nochim, paste(code_path,"/Training/silva_nr_v132_train_set.fa.gz",sep=""), multithread=TRUE)
-# taxa.gg<- assignTaxonomy(seqtab.nochim, paste(code_path,"/Training/gg_13_8_train_set_97.fa.gz",sep=""), multithread=TRUE)
 
 ### Assign species if possible
 ### Since exact sequences are assigned we can try to assign these sequences to species level in some cases (specific genus, not generalizable)
 ### Assignment to species highly depends on the database of choice.
 taxa.silva <- addSpecies(taxa.silva, paste0(code_path,"/Training/silva_species_assignment_v132.fa.gz",""),verbose=T)
-taxa.silva.bkp<-taxa.silva
-seqtab.nochim.bkp<-seqtab.nochim
 
-# taxa.gg.bkp<-taxa.gg
-# taxa.hit.bkp<-taxa.hit
 
+###
 DFForSeq<-colnames(seqtab.nochim)
 system("rm DADA2/DADA_seq.fas")
 
@@ -144,8 +140,6 @@ for(seq in DFForSeq){
 #### Taxa rownames are now the sequence of the ASV itself. This is not manageable downstream
 #### We transform sequences to shorter strings using md5-algorithm so we can keep track
 rownames(taxa.silva)<-sapply(rownames(taxa.silva),digest,algo="md5")
-# rownames(taxa.gg.bkp)<-sapply(rownames(taxa.gg),digest,algo="md5")
-# rownames(taxa.hit.bkp)<-sapply(rownames(taxa.hit),digest,algo="md5")
 colnames(seqtab.nochim)<-sapply(colnames(seqtab.nochim),digest,algo="md5")
 
 
@@ -180,13 +174,18 @@ rownames(unqs.mock)
 
 
 #### Read metadata
+metadata<-read.csv(paste0(code_path,"/Metadata/metadata.csv"))
+rownames(metadata)<-metadata$SampleID
+
 #### Create PhyloSeq Object
 #### File named metadata.csv must exist and have SampleID variable for sample name
 ps_silva<-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=F),tax_table(taxa.silva),treeSilva)
 
 
+### Clean phyloseq object from mock controls
+sample_data(ps_silva)<-metadata
 ### Clean workspace
-
+rm(DFForSeq,filtFs,filtRs,fnRs,fnFs,seq,track,mergers,seqtab.nochim.bkp,seqtab.nochim.pooled,taxa.silva.bkp)
 # #asiggn metadata
 # ##DBModule$insertLogs("Assign metadata if exists",job_id,1)
 # if(!any(sapply(metadata,function(list) length(list)==0))) {

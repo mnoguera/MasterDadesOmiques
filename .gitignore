@@ -46,4 +46,4 @@ PracticalDay1/SequenceAnalysis/RawData/*
 PracticalDay1/SequenceAnalysis/Training/*
 
 #MacOS garbage
-*/.DS_Store
+*DS_Store
