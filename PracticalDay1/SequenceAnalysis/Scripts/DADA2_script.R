@@ -15,6 +15,7 @@
 library(dada2); packageVersion("dada2") ## Dada2 v.1.18.0
 library(ShortRead); packageVersion("ShortRead") ## ShortRead 1.48.0
 library(phyloseq); packageVersion("phyloseq") ## phyloseq 1.34.0
+library(gridExtra)
 require(digest)
 
 
@@ -119,12 +120,17 @@ head(track)
 ### Will need to chose taxonomy database from Analysis Configuration - Silva default
 ### We'll talk about the different databases in class.
 list.files(paste(code_path,"/Training/",sep=""))
+taxa.rdp<- assignTaxonomy(seqtab.nochim, paste(code_path,"/Training/rdp_train_set_16.fa.gz",sep=""), multithread=TRUE)
 taxa.silva<-readRDS("taxa.silva.rds")
 taxa.silva<- assignTaxonomy(seqtab.nochim, paste(code_path,"/Training/silva_nr_v132_train_set.fa.gz",sep=""), multithread=TRUE)
 
 ### Assign species if possible
 ### Since exact sequences are assigned we can try to assign these sequences to species level in some cases (specific genus, not generalizable)
 ### Assignment to species highly depends on the database of choice.
+
+### RDP
+taxa.rdp <- addSpecies(taxa.silva, paste0(code_path,"/Training/rdp_species_assignment_16.fa.gz",""),verbose=T)
+### SILVA
 taxa.silva <- addSpecies(taxa.silva, paste0(code_path,"/Training/silva_species_assignment_v132.fa.gz",""),verbose=T)
 
 
@@ -185,7 +191,7 @@ ps_silva<-phyloseq(otu_table(seqtab.nochim, taxa_are_rows=F),tax_table(taxa.silv
 ### Clean phyloseq object from mock controls
 sample_data(ps_silva)<-metadata
 ### Clean workspace
-rm(DFForSeq,filtFs,filtRs,fnRs,fnFs,seq,track,mergers,seqtab.nochim.bkp,seqtab.nochim.pooled,taxa.silva.bkp)
+rm(DFForSeq,filtFs,filtRs,fnRs,fnFs,seq,track,mergers,seqtab.nochim.pooled)
 # #asiggn metadata
 # ##DBModule$insertLogs("Assign metadata if exists",job_id,1)
 # if(!any(sapply(metadata,function(list) length(list)==0))) {
@@ -201,4 +207,82 @@ rm(DFForSeq,filtFs,filtRs,fnRs,fnFs,seq,track,mergers,seqtab.nochim.bkp,seqtab.n
 
 ### We keep the session
 save.image(file=paste0(code_path,"/DADA2/DADA2_Rsession.RData"))
+
+
+rank_names(ps_silva)
+
+
+table(tax_table(ps_silva)[, "Phylum"], exclude = NULL)
+
+
+# Compute prevalence of each feature, store as data.frame
+prevdf <- apply(X = otu_table(ps_silva),
+                MARGIN = ifelse(taxa_are_rows(ps_silva), yes = 1, no = 2),
+                FUN = function(x){sum(x > 0)})
+# Add taxonomy and total read counts to this data.frame
+prevdf <- data.frame(Prevalence = prevdf,
+                     TotalAbundance = taxa_sums(ps_silva),
+                     tax_table(ps_silva))
+
+#Then compute the total and average prevalences of each feature:
+plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$Prevalence))})
+
+
+# Define phyla to filter
+filterPhyla <- c("Actinobacteria")
+
+# Filter entries with unidentified Phylum.
+ps <- subset_taxa(ps_silva, !Phylum %in% filterPhyla)
+ps
+
+
+# Subset to the remaining phyla
+prevdf1 <- subset(prevdf, Phylum %in% get_taxa_unique(ps_silva, "Phylum"))
+
+# Plot prevalenced vs abundances. What do we see?
+require(ggplot2)
+ggplot(prevdf1, aes(TotalAbundance, Prevalence / nsamples(ps_silva),color=Phylum)) +
+  # Include a guess for parameter
+  geom_point(size = 2, alpha = 0.7) +
+  geom_hline(yintercept = 0.05, alpha = 0.5, linetype = 2) +
+  scale_x_log10() +  xlab("Total Abundance") + ylab("Prevalence [Frac. Samples]") +
+  facet_wrap(~Phylum) + theme(legend.position="none")
+
+
+## Let's keep frequent ASVs
+# Define prevalence threshold as 5% of total samples
+prevalenceThreshold <- 0.05 * nsamples(ps_silva)
+
+# Execute prevalence filter, using `prune_taxa()` function
+keepTaxa <- rownames(prevdf1)[(prevdf1$Prevalence >= prevalenceThreshold)]
+ps1 <- prune_taxa(keepTaxa, ps_silva)
+
+
+### Diversity impact on phylogenetic tree
+#Despite having many ASVs we have very little number of bacterial genus
+# How many genera would be present after filtering?
+length(get_taxa_unique(ps1, taxonomic.rank = "Genus"))
+
+### We can colloapse the data matrix into any taxonomical level
+ps2 = tax_glom(ps1, "Genus", NArm = TRUE)
+### Alternatively, we can collapse based on branch/tip lenght
+h1 = 0.4
+ps3 = tip_glom(ps1, h = h1)
+
+### We can see how this affects our phylogenetic tree
+multiPlotTitleTextSize = 8
+p1tree = plot_tree(ps1, method = "treeonly",
+                   ladderize = "left",
+                   title = "Before Agglomeration") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
+p2tree = plot_tree(ps2, method = "treeonly",
+                   ladderize = "left", title = "By Genus") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
+p3tree = plot_tree(ps3, method = "treeonly",
+                   ladderize = "left", title = "By Height") +
+  theme(plot.title = element_text(size = multiPlotTitleTextSize))
+
+# group plots together
+grid.arrange(nrow = 1, p1tree, p2tree, p2tree)
+
 
