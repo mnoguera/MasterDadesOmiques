@@ -1,8 +1,11 @@
 #######
-## Master in Omics Data Analysis, 2020-21 Universitat de Vic
+## Master in Omics Data Analysis, 2018-19 Universitat de Vic
 ## Metagenomics
-## Marc Noguera-Julian, PhD. Jan, 26th, 27th, 28th. 2020
+## Marc Noguera-Julian, PhD. February, 3rd,4th and 5th, 2020
 ######
+
+## You can access analysis code at https://github.com/mnoguera/MasterDadesOmiques 
+## or as a zip file in the campus. Use GitHub for latest version.
 
 ## DataSet for practical drylab work on statistical analysis16s metagenomics data
 ## We will be analyzing the data set from 110 sample in non-infected and HIV-infected patients
@@ -17,8 +20,7 @@
 ##   -  OtuRepSeq.tree: Contains a phylogenetic tree based on the representative sequences for each OTU
 
 
-## For the analysis we will be using R and the following packages, but you can use the 
-## version that is available from CRAN or BioConductor
+## For the analysis we will be using R and the following packages
 > packageVersion("phyloseq")  
 [1] ‘1.26.1’
 > packageVersion("vegan")

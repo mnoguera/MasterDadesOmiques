@@ -22,7 +22,6 @@
 
 # produced vignettes
 vignettes/*.html
-vignettes/*.pdf
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -40,10 +39,12 @@ vignettes/*.pdf
 
 # Analysis results
 PracticalDay1/SequenceAnalysis/DADA2/*
-
+PracticalDay2/*.pdf
+PracticalDay2/StatisticalTests/*
 # RawData and TrainingData
 PracticalDay1/SequenceAnalysis/RawData/*
 PracticalDay1/SequenceAnalysis/Training/*
+
 
 #MacOS garbage
 *DS_Store

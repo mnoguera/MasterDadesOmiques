@@ -8,7 +8,7 @@
 
 ##### We have metagenomic-16s data from 110 samples including healthy and HIV-infected patients
 
-# Part 0. We need to setup the environment 
+# Part 0. We need to setup the environment
 #######   read the data and adapt metadata for further analysis
 
 ### Set working directory where this file is located
@@ -18,15 +18,15 @@ if(is.na(myWD)){
 }
 setwd(myWD)
 #######   We will use the following packages: phyloseq, vegan, ggplot2 and DeSeq2
-suppressPackageStartupMessages(library(phyloseq))
-suppressPackageStartupMessages(library(vegan))
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(DESeq2))
-suppressPackageStartupMessages(require(doBy))
-suppressPackageStartupMessages(require(RColorBrewer))
+suppressPackageStartupMessages(library(phyloseq))### Bioconductors
+suppressPackageStartupMessages(library(vegan))### Bioconductors
+suppressPackageStartupMessages(library(ggplot2))### CRAN
+suppressPackageStartupMessages(library(DESeq2)) ### Bioconductors
+suppressPackageStartupMessages(require(doBy))### CRAN
+suppressPackageStartupMessages(require(RColorBrewer))### CRAN
 #######   gdata packages allows for microsofft office filetype read-in
-suppressPackageStartupMessages(library(gdata))
-packageVersion("phyloseq")  
+suppressPackageStartupMessages(library(gdata))### CRAN
+packageVersion("phyloseq")
 packageVersion("vegan")
 packageVersion("ggplot2")
 packageVersion("DESeq2")
@@ -35,12 +35,12 @@ packageVersion("doBy")
 
 
 ###################### Read OTU Data ##########################
-### Since we are using 16s amplicon design it will be possible to 
-### taxonomically  classify down to the genus level
+### Since we are using 16s amplicon design it will be possible to
+### taxonomically classify down to the genus level,
 AvailableRanks<-c("Kingdom","Phylum","Class","Order","Family","Genus")
 
 ### Define the minimum number of OTU counts for a sample to be further analyzed
-minSampleCountsB<-1000 
+minSampleCountsB<-1000
 ### Read the metadata
 metadataB<-read.csv("Metadata_Workshop_v1.0.csv")
 
@@ -105,8 +105,8 @@ barplot(colSums(otu_table(xB)),las=2,cex.names=0.6,main="#Counts/Sample")
 dev.off()
 
 
-#### Start Alpha - Diversity Analysis 
-### We will characterize alpha-diversity indices using a rarefied subset of 5000 counts 
+#### Start Alpha - Diversity Analysis
+### We will characterize alpha-diversity indices using a rarefied subset of 5000 counts
 ### in order to balance sampling between samples
 ### First we try to apply a prevalence filter
 x.2.0 <- xB
@@ -250,7 +250,7 @@ reverse.levels <- function(x) {
   return(x)
 }
 
-### Barplots at phylum. We use decreasing phylum abundances as X order 
+### Barplots at phylum. We use decreasing phylum abundances as X order
 ### and the phylum abundance of first sample as y order
 ### This careful use of X/Y order will already reveal patterns
 ### Define Level Order for X axis (SampleID)
@@ -308,6 +308,7 @@ ps.melt.x.3.0.genus<-psmelt(x.3.0.genus)
 
 ### Let's transform our data in different ways
 ps.melt.x.3.0.phylum$Abundance<-floor(ps.melt.x.3.0.phylum$Abundance)
+### Add a pseudocount to allow for log transformation
 ps.melt.x.3.0.phylum$Abundance<-ps.melt.x.3.0.phylum$Abundance+1
 ps.melt.x.3.0.phylum$AbundanceProportion <- ave(ps.melt.x.3.0.phylum$Abundance,list(ps.melt.x.3.0.phylum[,"SampleID"]), FUN=function(L) L/sum(L))
 ps.melt.x.3.0.phylum$AbundanceProportionLog <- log10(ps.melt.x.3.0.phylum$AbundanceProportion)
@@ -332,7 +333,7 @@ colnames(meanByGenus)<-c("Genus","meanAbundance")
 meanByGenus<-meanByGenus[with(meanByGenus, order(-meanAbundance, Genus)), ]
 
 
-#### Plot relative logProportions of most abundant genus
+#### Plot relative logProportions of most 10 abundant genus
 ggplot(ps.melt.x.3.0.genus[ps.melt.x.3.0.genus$Genus %in% meanByGenus[1:10,1],],aes(x=Genus,y=AbundanceProportionLog,fill=Genus))+geom_boxplot()+facet_wrap(~HIVStatus)+ theme(axis.text.x = element_text(angle = 90))
 ggplot(ps.melt.x.3.0.genus[ps.melt.x.3.0.genus$Genus %in% meanByGenus[1:10,1],],aes(x=Genus,y=AbundanceProportionLog,fill=Genus))+geom_boxplot()+facet_wrap(~RiskGroup)+ theme(axis.text.x = element_text(angle = 90))
 
@@ -377,14 +378,14 @@ p<-ggplot(ps.x.4.0.genus,aes(x=Genus,y=Abundance))
 #Plot B&W boxplot
 p+geom_boxplot(aes(fill=SexualPractice,stat="identity"),notch=F,position="dodge")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+ scale_fill_grey(start = 0.6, end = 1)+
-  theme_bw() + theme(legend.title=element_blank(),legend.text=element_text(size=22),legend.position=c(.5, .5))+ 
+  theme_bw() + theme(legend.title=element_blank(),legend.text=element_text(size=22),legend.position=c(.5, .5))+
   theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black",size=0.9),
         axis.text.x = element_text(angle = 45, hjust = 1,size=8),axis.text.y = element_text(angle = 45, hjust = 1,size=8),axis.title=element_text(size=8,face="bold"))
 ggsave("GenusBoxplot_bySexualPractice_bw.pdf")  ################### <----  Save Pdf
 #Plot Color barplot
 p+geom_boxplot(aes(fill=SexualPractice,stat="identity"),notch=F,position="dodge")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  theme_bw() + theme(legend.title=element_blank(),legend.text=element_text(size=22),legend.position=c(.5, .5))+ 
+  theme_bw() + theme(legend.title=element_blank(),legend.text=element_text(size=22),legend.position=c(.5, .5))+
   theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black",size=0.9),
         axis.text.x = element_text(angle = 45, hjust = 1,size=8),axis.text.y = element_text(angle = 45, hjust = 1,size=8),axis.title=element_text(size=8,face="bold"))+scale_y_continuous(trans='sqrt')
 ggsave("GenusBoxplot_bySexualPractice_color.pdf")  ################### <----  Save Pdf
@@ -411,7 +412,7 @@ p+geom_boxplot(aes(fill=SexualPractice),notch=F,position="dodge")+facet_wrap(~Ge
 ggsave("GenusBoxplot_bySexualPractice_color_WrapByGenus.pdf")   ################### <----  Save Pdf
 
 
-### 
+###
 statisticValue<-function(value=NULL){
   if(value>0.1){
     return (paste("=",round(value,digits=2)))
@@ -428,7 +429,7 @@ statisticValue<-function(value=NULL){
   else if(value>=0.0001){
     return(paste("<0.001"))
   }
-  else{return (paste("<0.0001"))}  
+  else{return (paste("<0.0001"))}
 }
 boxplotNumericByGroup<-function(mydata,category,variable,nbvariable,test,Rank=NULL){
   # if(is.null(Rank)){
@@ -539,7 +540,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
     scale_fill_brewer(palette = palname, ...)
   }
   sigtabgen=sigtab
-  
+
   #sigtabgen = subset(sigtab, !is.na(Genus))
   #sigtabgen = subset(sigtabgen, sigtabgen$Genus != "unclassified")
   # Phylum order
@@ -554,7 +555,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
   }
   x = tapply(sigtabgen$log2FoldChange, sigtabgen$LastRank, function(x) max(x))
   x = sort(x, TRUE)
-  
+
   sigtabgen$LastRank = factor(as.character(sigtabgen$LastRank), levels=names(x))
   sigtabgen$log2Counts<-log2(sigtabgen$baseMean)
   sigtabgen$alpha<- 1 - sigtabgen$padj
@@ -565,7 +566,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
   #+geom_point(aes(size=sigtabgen$log2Counts))+scale_size_area()
   p<-p+theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=0.5,size=10))
   p<-p+theme(legend.key.size=unit(1,"cm"))
-  p<-p+ ggtitle(paste(stringForTitle," Data:",as.character(deparse(substitute(mydata))))) + 
+  p<-p+ ggtitle(paste(stringForTitle," Data:",as.character(deparse(substitute(mydata))))) +
     theme(plot.title = element_text(lineheight=.7, face="bold"))
   print(p)
   #ggplot(sigtabgen, aes(x=Genus, y=log2FoldChange, color=Phylum)) + geom_point(size=6)+scale_size(range=c(1,5))+
@@ -584,7 +585,7 @@ p1<-boxplotNumericByGroup(my.subset,category="HIVStatus",variable="AbundanceProp
 
 
 ### Let's move one step further and screen all genus for significant difference by using
-### a more complex (and adequate) statistical framework using DESeq2 package and negative binomial 
+### a more complex (and adequate) statistical framework using DESeq2 package and negative binomial
 ### distribution fits to detect over(under)-represented genus in a dichotomic condition
 
 compareTwoGroups(mydata=x.3.0.genus,variable="HIVStatus",category1="HIVpos",category2="HIVneg",design=~HIVStatus,maxAlpha=0.01)
@@ -592,7 +593,7 @@ compareTwoGroups(mydata=x.3.0.genus,variable="SexualPractice",category1="MSM",ca
 
 #### End of Bacterial taxonomical analysis
 
-### Start Ordination Analysis  
+### Start Ordination Analysis
 ### For this we need to use ecological distance. We will be using both Bray-Curtis distance
 ### and WUnifrac phylogenetic distance for this tutorial
 
@@ -600,7 +601,7 @@ compareTwoGroups(mydata=x.3.0.genus,variable="SexualPractice",category1="MSM",ca
 x.4.0<-xB
 
 ### Remember that we have more than 16k OTUs in our data. Most of them are unique to a single sample
-### thus indicating that they are probably artifact. Usually, these OTU don't have a great impact on distance 
+### thus indicating that they are probably artifact. Usually, these OTU don't have a great impact on distance
 ### calculations for this particular reason
 
 #####Intended for de novo OTU-picking only, we keep OTUs that appear at least in two different samples
@@ -716,7 +717,7 @@ names(pdataframe)[1] = "distance"
 
 p = ggplot(pdataframe, aes(Axis_1, Axis_2)) +
   geom_point(size = 2, aes(shape=HIVStatus,color=SexualPractice,fill=SexualPractice)) +
-  facet_wrap(~distance, scales = "free")+ 
+  facet_wrap(~distance, scales = "free")+
   scale_colour_manual(values=c("darkred","darkolivegreen","dodgerblue2")) +
   theme_bw() +
   theme(panel.border=element_blank(),strip.text = element_text(size=12,face="bold"),
@@ -828,7 +829,7 @@ x.4.0<-prune_taxa(wh0,x.4.0)
 x.4.0 = transform_sample_counts(x.4.0, function(x) ((x/sum(x))))
 x.4.0<-tax_glom(x.4.0,taxrank="Genus")
 
-                
+
 #My "Genus" list
 my.genus<-c("Prevotella","Bacteroides","Ruminococcus","Catenibacterium")
 mytax<-data.frame(tax_table(x.4.0))
@@ -846,29 +847,29 @@ PropData.2G<-PropData.2G/Sum
 # Modify Sum (to the interval [rmin,rmax])
 Sum2<-(Sum-min(Sum))*(rmax-rmin)/(max(Sum)-min(Sum)) + rmin
 
-# Extract coordinates for a 2-D plot 
+# Extract coordinates for a 2-D plot
 set.seed(1)
 Dist.NMDS<-metaMDS(PropData,k=2,dist="bray")
-Puntos<-Dist.NMDS$points 
-                
+Puntos<-Dist.NMDS$points
+
 
 pdf("PiechartsOverNMDS_Bray_BactPrevRumiCate.pdf")
-# Plot with the NMDS limits  
+# Plot with the NMDS limits
 par(fig=c(0,1,0,.9))
 plot(NA,NA,xlim=c(-1.25,1.25),ylim=c(-0.8,1.2),xlab="",ylab="")
 # Add text
 mtext("NMDS1", side=1, line=3)
 mtext("NMDS2", side=4, line=1)
-            
+
 Colours<-c("khaki1","cornflowerblue","brown2","darkgreen")
-# Add pies  
+# Add pies
 for (i in 1:nrow(Puntos)){
   #if(data.frame(sample_data(x.4.0))[i,"SexualPractice"]=="HET"){
       add.pie(z=PropData.2G[i,],x=Puntos[i,1],y=Puntos[i,2],radius=Sum2[i],labels=NA,col=Colours)
   #}
-}  
-                
-# Legend (for bar 3)  
+}
+
+# Legend (for bar 3)
 par(fig=c(0.1,0.9,0.5,1),new=T)
 # Empty plot
 plot(1, type="n", axes=FALSE, xlab="", ylab="")
@@ -904,10 +905,10 @@ PropData.2G<-PropData.2G/Sum
 # Modify Sum (to the interval [rmin,rmax])
 Sum2<-(Sum-min(Sum))*(rmax-rmin)/(max(Sum)-min(Sum)) + rmin
 
-# Extract coordinates for a 2-D plot 
+# Extract coordinates for a 2-D plot
 set.seed(1)
 Dist.NMDS<-metaMDS(PropData,k=2,dist="bray")
-Puntos<-Dist.NMDS$points 
+Puntos<-Dist.NMDS$points
 
 pdf("PiechartsOverNMDS_Bray_GeneraOver2.pdf")
 par(fig=c(0,3,0,1.2))
@@ -918,14 +919,14 @@ mtext("NMDS2", side=4, line=1)
 
 require(RColorBrewer)
 Colours<-brewer.pal(21,"Spectra")
-# Add pies  
+# Add pies
 for (i in 1:nrow(Puntos)){
   if(data.frame(sample_data(x.4.0))[i,"SexualPractice"]=="MSM"){
     add.pie(z=PropData.2G[i,],x=Puntos[i,1],y=Puntos[i,2],radius=Sum2[i],labels=NA,col=Colours)
   }
-}  
+}
 
-# Legend (for bar 3)  
+# Legend (for bar 3)
 par(fig=c(0.1,0.9,0.5,1),new=T)
 # Empty plot
 plot(1, type="n", axes=FALSE, xlab="", ylab="")
@@ -1078,7 +1079,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
   #   x = sort(x, TRUE)
   #   sigtabgen$Phylum = factor(as.character(sigtabgen$Phylum), levels=names(x))
   #   sigtabgen$Phylum = factor(as.character(sigtabgen$Phylum), levels=sort(as.character(sigtabgen$Phylum)))
-  
+
   # Genus order
   if(as.character(LastRank)== "Genus"){
     sigtabgen$LastRank<-sigtabgen[,"Genus"]
@@ -1087,7 +1088,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
   }
   x = tapply(sigtabgen$log2FoldChange, sigtabgen$LastRank, function(x) min(x))
   x = sort(x, TRUE)
-  
+
   sigtabgen$LastRank = factor(as.character(sigtabgen$LastRank), levels=names(x))
   sigtabgen$log2Counts<-sigtabgen$baseMean
   sigtabgen$alpha<- 1 - sigtabgen$padj
@@ -1099,7 +1100,7 @@ compareTwoGroups<-function(mydata=NULL,variable=NULL,category1=NULL,category2=NU
   #+geom_point(aes(size=sigtabgen$log2Counts))+scale_size_area()
   p<-p+theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=0.5,size=10))
   #p<-p+theme(legend.key.size=unit(1,"cm"))
-  p<-p+ ggtitle(paste(stringForTitle," Data:",as.character(deparse(substitute(mydata))))) + 
+  p<-p+ ggtitle(paste(stringForTitle," Data:",as.character(deparse(substitute(mydata))))) +
     theme(plot.title = element_text(lineheight=.7, face="bold"))+coord_flip()+
     theme(axis.text.y = element_text( size=16)) + geom_hline(xintercept=0,colour="darkred", linetype = "longdash")
   print(p)
@@ -1125,7 +1126,7 @@ statisticValue<-function(value=NULL){
   else if(value>=0.0001){
     return(paste("<0.001"))
   }
-  else{return (paste("<0.0001"))}  
+  else{return (paste("<0.0001"))}
 }
 
 x.3.0<-xB
@@ -1134,8 +1135,8 @@ compareTwoGroups(mydata=x.3.0,variable="HIVStatus",category1="HIVpos",category2=
 #################### Additional section
 
 
-### In the following section we will just output the data in a specific format 
-### for additional analysis using external tools. This will create some files that 
+### In the following section we will just output the data in a specific format
+### for additional analysis using external tools. This will create some files that
 ### can be imported downstres
 wh0=genefilter_sample(xB,filterfun_sample(function(x) x>1), A=0.01*nsamples(xB))
 xBF<-prune_taxa(wh0,xB)
